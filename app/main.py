@@ -1,18 +1,26 @@
 from uuid import UUID
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from .models import Ad, Comment
 
 
 app = FastAPI()
+origins = ['*']
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.post('/new_ad/')
-def create_new_ad(title: str, text: str, author: str, tags: set):
+def create_new_ad(ad: Ad):
     try:
-        ad = Ad(title=title, text=text, author=author, tags=tags)
         ad.save()
     except ValidationError as err:
         raise HTTPException(status_code=400, detail=f'Error: {err}')

@@ -89,6 +89,6 @@ class Ad(BaseModel):
     @validator('tags')
     def tag_length(cls, tags):
         for tag in tags:
-            if not 3 <= len(tag) <= 32:
-                raise ValueError('The tag must be between 3 and 32 characters long.')
+            if not 2 <= len(tag) <= 32:
+                raise ValueError('The tag must be between 2 and 32 characters long.')
         return tags
