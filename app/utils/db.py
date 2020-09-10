@@ -1,0 +1,86 @@
+import os
+import pickle
+import logging
+from datetime import datetime
+from uuid import uuid4
+
+import pymongo
+import redis
+
+from .typecodecs import codec_options
+
+
+MONGO_HOST = 'localhost'
+MONGO_PORT = '27017'
+
+REDIS_CONFIG = {
+    'host': 'localhost',
+    'port': 6379,
+    # 'host':  os.environ.get('REDIS_HOST'),
+    # 'port': os.environ.get('REDIS_PORT'),
+    'db': 0,
+}
+
+
+logger = logging.getLogger('db-logger')
+logger.setLevel(logging.INFO)
+logging.info('')
+
+
+class MongoDb:
+
+    def __init__(self):
+        client = pymongo.MongoClient(f'mongodb://{MONGO_HOST}:{MONGO_PORT}/')
+        db = client['addb']
+        self.ads_collection = db.get_collection('ads_collection', codec_options=codec_options)
+
+    def save(self, ad):
+        self.ads_collection.insert(ad)
+        logger.info(' INSERT DATA INTO MONGO')
+
+    def find_all(self, cls):
+        cursor = self.ads_collection.find({})
+        ad_objects = []
+        for c in cursor:
+            c.pop('_id')
+            obj = cls(**c)
+            ad_objects.append(obj)
+        return ad_objects
+
+    def find_one(self, cls, uid):
+        ad = self.ads_collection.find_one({'uid': uid})
+        ad.pop('_id')
+        logger.info(' GET DATA FROM MONGO')
+        return cls(**ad)
+
+    def update_tags(self, uid, key, new_data):
+        self.ads_collection.update_one({'uid': uid}, {'$set': {key: new_data,
+                                                               'updated': datetime.utcnow()}})
+
+    def add_comment(self, uid, comment):
+        comment.created = datetime.utcnow()
+        self.ads_collection.update_one({'uid': uid}, {'$push': {'comments': dict(comment)}})
+
+
+class RedisDb:
+
+    def __init__(self):
+        self.client = redis.StrictRedis(**REDIS_CONFIG)
+
+    def save(self, key, value):
+        data = pickle.dumps(value)
+        self.client.set(key, data)
+        logger.info(' INSERT DATA INTO REDIS')
+
+    def query_one(self, cls, uid):
+        key = str(uid)
+        val = self.client.get(key)
+        if val:
+            ad = pickle.loads(val)
+            logger.info(' GET DATA FROM REDIS')
+            return cls(**ad)
+        return None
+
+
+mongo_db = MongoDb()
+redis_db = RedisDb()
