@@ -68,6 +68,14 @@ class Ad(BaseModel):
         new_data = mongo_db.find_one(cls, uid)
         redis_db.save(str(uid), new_data.dict())
 
+    @classmethod
+    def get_statistic(cls, uid):
+        stat_data = redis_db.get_statistic(uid)
+        if not stat_data:
+            stat_data = mongo_db.get_statistic(cls, uid)
+            redis_db.set_statistic(uid, stat_data)
+        return stat_data
+
     @validator('author')
     def author_name_length(cls, v):
         if len(v) < 3:

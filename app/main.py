@@ -29,7 +29,7 @@ def create_new_ad(ad: Ad):
 @app.get('/ads/')
 def ads_list():
     ads = Ad.query_all()
-    return {'ads': ads}
+    return ads
 
 
 @app.get('/ads/{uid}')
@@ -52,3 +52,9 @@ def add_comment(uid: UUID, comment: Comment, request: Request):
         Ad.add_comment(uid, comment)
     except ValidationError as err:
         raise HTTPException(status_code=400, detail=f'Error: {err}')
+
+
+@app.get('/ads/{uid}/statistic/')
+def get_ad_statistic(uid: UUID, request: Request):
+    stat_data = Ad.get_statistic(uid)
+    return stat_data
