@@ -38,7 +38,7 @@ def single_ad(uid: UUID, request: Request):
     return {'ad': ad}
 
 
-@app.post('/ads/{uid}')
+@app.post('/ads/{uid}/tags/')
 def update_tags(uid: UUID, tags: set, request: Request):
     try:
         Ad.update_tags(uid, 'tags', tags)
