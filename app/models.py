@@ -15,12 +15,6 @@ class Comment(BaseModel):
     def __str__(self):
         return f'{self.uid}|{self.author}|{self.created}'
 
-    @validator('created')
-    def check_created(cls, v):
-        if v != datetime.utcnow():
-            v = datetime.utcnow()
-        return v
-
     @validator('text')
     def text_length(cls, v):
         if len(v) == 0:
@@ -44,6 +38,10 @@ class Ad(BaseModel):
         redis_db.save(str(self.dict()['uid']), self.dict())
         mongo_db.save(self.dict())
 
+    def check_uid(self):
+        if self.uid:
+            self.uid = uuid4()
+
     @classmethod
     def query_all(cls):
         '''Returns all ads from the db as an Ad objects'''
@@ -61,15 +59,20 @@ class Ad(BaseModel):
         mongo_db.update_tags(uid, key, new_data)
         new_data = mongo_db.find_one(cls, uid)
         redis_db.save(str(uid), new_data.dict())
+        # update statistics
+        stat_data = mongo_db.get_statistic(cls, uid)
+        redis_db.set_statistic(uid, stat_data)
 
     @classmethod
     def add_comment(cls, uid, comment):
         mongo_db.add_comment(uid, comment)
         new_data = mongo_db.find_one(cls, uid)
         redis_db.save(str(uid), new_data.dict())
+        stat_data = mongo_db.get_statistic(cls, uid)
+        redis_db.set_statistic(uid, stat_data)
 
     @classmethod
-    def get_statistic(cls, uid):
+    def get_statistics(cls, uid):
         stat_data = redis_db.get_statistic(uid)
         if not stat_data:
             stat_data = mongo_db.get_statistic(cls, uid)

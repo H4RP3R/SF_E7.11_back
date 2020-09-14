@@ -21,6 +21,7 @@ app.add_middleware(
 @app.post('/new_ad/')
 def create_new_ad(ad: Ad):
     try:
+        ad.check_uid()
         ad.save()
     except ValidationError as err:
         raise HTTPException(status_code=400, detail=f'Error: {err}')
@@ -54,7 +55,7 @@ def add_comment(uid: UUID, comment: Comment, request: Request):
         raise HTTPException(status_code=400, detail=f'Error: {err}')
 
 
-@app.get('/ads/{uid}/statistic/')
-def get_ad_statistic(uid: UUID, request: Request):
-    stat_data = Ad.get_statistic(uid)
+@app.get('/ads/{uid}/statistics/')
+def get_ad_statistics(uid: UUID, request: Request):
+    stat_data = Ad.get_statistics(uid)
     return stat_data

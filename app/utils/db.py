@@ -53,7 +53,7 @@ class MongoDb:
     def find_one(self, cls, uid):
         ad = self.ads_collection.find_one({'uid': uid})
         ad.pop('_id')
-        logger.info(' GET DATA FROM MONGO')
+        logger.info(' FIND ONE IN MONGO')
         try:
             return cls(**ad)
         except:
@@ -62,13 +62,16 @@ class MongoDb:
     def update_tags(self, uid, key, new_data):
         self.ads_collection.update_one({'uid': uid}, {'$set': {key: new_data,
                                                                'updated': datetime.utcnow()}})
+        logger.info(' UPDATE TAGS IN MONGO')
 
     def add_comment(self, uid, comment):
         comment.created = datetime.utcnow()
         self.ads_collection.update_one({'uid': uid}, {'$push': {'comments': dict(comment)}})
+        logger.info(' SAVE COMMENT IN MONGO')
 
     def get_statistic(self, cls, uid):
         '''Returns dict with two keys: tags_num, comments_num'''
+        logger.info(' GET STATISTICS FROM MONGO')
         ad = self.find_one(cls, uid)
         tags_num, comments_num = len(ad.tags), len(ad.comments)
         return {'tags_num': tags_num, 'comments_num': comments_num}
@@ -89,20 +92,22 @@ class RedisDb:
         val = self.client.get(key)
         if val:
             ad = pickle.loads(val)
-            logger.info(' GET DATA FROM REDIS')
+            logger.info(' QUERY ONE FROM REDIS')
             return cls(**ad)
         return None
 
     def get_statistic(self, uid):
         key = 'stat_' + str(uid)
         try:
-            return  pickle.loads(self.client.get(key))
+            logger.info(' GET STATISTICS FROM REDIS')
+            return pickle.loads(self.client.get(key))
         except:
             return None
 
     def set_statistic(self, uid, stat_data):
         key = 'stat_' + str(uid)
         self.client.set(key, pickle.dumps(stat_data))
+        logger.info(' SAVE STATISTICS TO REDIS')
 
 
 mongo_db = MongoDb()
