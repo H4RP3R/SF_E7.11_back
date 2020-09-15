@@ -4,7 +4,7 @@ from typing import Optional, List
 
 from pydantic import BaseModel, Field, validator
 
-from .utils.db import mongo_db, redis_db
+from app.utils.db import mongo_db, redis_db
 
 
 class Comment(BaseModel):

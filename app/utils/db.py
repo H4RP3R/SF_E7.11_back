@@ -7,7 +7,7 @@ from uuid import uuid4
 import pymongo
 import redis
 
-from .typecodecs import codec_options
+from app.utils.typecodecs import codec_options
 
 
 MONGO_HOST = os.environ['MONGO_HOST']
