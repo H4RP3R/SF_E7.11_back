@@ -10,14 +10,12 @@ import redis
 from .typecodecs import codec_options
 
 
-MONGO_HOST = 'localhost'
-MONGO_PORT = '27017'
+MONGO_HOST = os.environ['MONGO_HOST']
+MONGO_PORT = os.environ['MONGO_PORT']
 
 REDIS_CONFIG = {
-    'host': 'localhost',
-    'port': 6379,
-    # 'host':  os.environ.get('REDIS_HOST'),
-    # 'port': os.environ.get('REDIS_PORT'),
+    'host':  os.environ['REDIS_HOST'],
+    'port': os.environ['REDIS_PORT'],
     'db': 0,
 }
 
@@ -63,7 +61,7 @@ class MongoDb:
 
     def update_tags(self, uid, key, new_data):
         acknowledged = self.ads_collection.update_one({'uid': uid}, {'$set': {key: new_data,
-                                                               'updated': datetime.utcnow()}})
+                                                                              'updated': datetime.utcnow()}})
         if acknowledged.modified_count:
             logger.debug(' UPDATE TAGS IN MONGO')
 

@@ -1,3 +1,4 @@
 env/
 __pycache__/
 *.pyc
+set_vars.sh
