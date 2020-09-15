@@ -36,14 +36,16 @@ def ads_list():
 @app.get('/ads/{uid}')
 def single_ad(uid: UUID, request: Request):
     ad = Ad.query_one(uid)
-    return {'ad': ad}
+    if ad:
+        return {'ad': ad}
+    raise HTTPException(status_code=404, detail='Not found')
 
 
 @app.post('/ads/{uid}/tags/')
 def update_tags(uid: UUID, tags: set, request: Request):
     try:
-        Ad.update_tags(uid, 'tags', tags)
-    except ValidationError as err:
+        error = Ad.update_tags(uid, 'tags', tags)
+    except (ValidationError, AttributeError) as err:
         raise HTTPException(status_code=400, detail=f'Error: {err}')
 
 
@@ -57,5 +59,8 @@ def add_comment(uid: UUID, comment: Comment, request: Request):
 
 @app.get('/ads/{uid}/statistics/')
 def get_ad_statistics(uid: UUID, request: Request):
-    stat_data = Ad.get_statistics(uid)
+    try:
+        stat_data = Ad.get_statistics(uid)
+    except AttributeError as err:
+        raise HTTPException(status_code=400, detail=f'Error: {err}')
     return stat_data

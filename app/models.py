@@ -29,7 +29,26 @@ class Ad(BaseModel):
     text: str
     author: str
     tags: Optional[set] = None
-    comments: Optional[List[Comment]] = []  # handle nested models
+    comments: Optional[List[Comment]] = []
+
+    class Config:
+        schema_extra = {
+            'example': {
+                'uid': uuid4(),
+                'title': 'Title',
+                'updated': datetime.utcnow(),
+                'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
+                'author': 'string',
+                'tags': ['tag1', 'tag2'],
+                'comments': [
+                    {
+                        'author': 'Author',
+                        'text': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do',
+                        'created':  datetime.utcnow(),
+                    }
+                ]
+            }
+        }
 
     def __str__(self):
         return f'{self.uid}|{self.title}|{self.updated}'
@@ -56,6 +75,8 @@ class Ad(BaseModel):
 
     @classmethod
     def update_tags(cls, uid, key, new_data):
+        new_data = set(new_data)
+        print(new_data)
         mongo_db.update_tags(uid, key, new_data)
         new_data = mongo_db.find_one(cls, uid)
         redis_db.save(str(uid), new_data.dict())
@@ -100,6 +121,6 @@ class Ad(BaseModel):
     @validator('tags')
     def tag_length(cls, tags):
         for tag in tags:
-            if not 2 <= len(tag) <= 32:
+            if not 2 <= len(tag.strip()) <= 32:
                 raise ValueError('The tag must be between 2 and 32 characters long.')
         return tags
