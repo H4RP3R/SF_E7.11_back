@@ -10,7 +10,7 @@ import redis
 from utils.typecodecs import codec_options
 
 
-MONGO_PORT = os.environ['MONGO_PORT']
+MONGO_PORT = os.environ['MONGO-PORT']
 MONGO_HOST = os.environ['MONGO_HOST']
 
 REDIS_CONFIG = {
