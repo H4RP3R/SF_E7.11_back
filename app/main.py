@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request, HTTPException, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
-from app.models import Ad, Comment
+from models import Ad, Comment
 
 
 app = FastAPI()
